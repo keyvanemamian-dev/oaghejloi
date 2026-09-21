@@ -1,0 +1,81 @@
+import os
+import requests
+from flask import Flask, request
+
+app = Flask(__name__)
+
+BOT_TOKEN = 1273875466:johT6Q_58Z7Gus9iZw8Vzgd0AdV58JpzHX0
+OWNER_ID = 2020589750
+
+if not BOT_TOKEN:
+    raise RuntimeError("BOT_TOKEN is not set")
+
+BASE_URL = f"https://tapi.bale.ai/bot{BOT_TOKEN}"
+
+
+@app.route("/", methods=["GET"])
+def home():
+    return "Bale bot is running!"
+
+
+@app.route("/webhook", methods=["POST"])
+def webhook():
+    data = request.get_json(silent=True)
+
+    if not data:
+        return "OK", 200
+
+    print("========== NEW UPDATE ==========")
+    print(data)
+    print("================================")
+
+    message = data.get("message")
+
+    if not message:
+        return "OK", 200
+
+    chat = message.get("chat", {})
+    user = message.get("from", {})
+
+    chat_id = chat.get("id")
+    user_id = user.get("id")
+    first_name = user.get("first_name", "")
+    username = user.get("username", "")
+    text = message.get("text", "")
+
+    print(f"CHAT ID: {chat_id}")
+    print(f"USER ID: {user_id}")
+    print(f"NAME: {first_name}")
+    print(f"USERNAME: {username}")
+    print(f"TEXT: {text}")
+
+    # اگر OWNER_ID تنظیم شده باشد،
+    # پیام کاربران برای صاحب ربات ارسال می‌شود.
+    if OWNER_ID and str(chat_id) != str(OWNER_ID):
+
+        owner_message = (
+            "📩 پیام جدید برای ربات\n\n"
+            f"👤 نام: {first_name}\n"
+            f"🆔 آیدی: {user_id}\n"
+            f"🔗 یوزرنیم: @{username}\n\n"
+            f"💬 پیام:\n{text}"
+        )
+
+        try:
+            requests.post(
+                f"{BASE_URL}/sendMessage",
+                json={
+                    "chat_id": OWNER_ID,
+                    "text": owner_message
+                },
+                timeout=10
+            )
+        except Exception as e:
+            print("SEND MESSAGE ERROR:", e)
+
+    return "OK", 200
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
