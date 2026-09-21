@@ -13,18 +13,13 @@ if not BOT_TOKEN:
 BASE_URL = f"https://tapi.bale.ai/bot{BOT_TOKEN}"
 
 
-def send_message(chat_id, text, reply_to_message_id=None):
-    data = {
-        "chat_id": chat_id,
-        "text": text
-    }
-
-    if reply_to_message_id:
-        data["reply_to_message_id"] = reply_to_message_id
-
+def send_message(chat_id, text):
     return requests.post(
         f"{BASE_URL}/sendMessage",
-        json=data
+        json={
+            "chat_id": chat_id,
+            "text": text
+        }
     )
 
 
@@ -52,24 +47,19 @@ def webhook():
     user = message.get("from", {})
 
     chat_id = chat.get("id")
-    message_id = message.get("message_id")
     text = message.get("text", "")
 
-    # =========================
-    # پیام صاحب ربات
-    # =========================
-
+    # پیام‌های خود صاحب ربات
     if chat_id == OWNER_ID:
 
-        # اگر صاحب ربات روی پیام یک کاربر Reply کرده باشد
         reply_to = message.get("reply_to_message")
 
         if reply_to and text:
 
             original_text = reply_to.get("text", "")
 
-            # User ID را از متن پیام قبلی پیدا می‌کنیم
             if "🆔 " in original_text:
+
                 try:
                     user_id = original_text.split("🆔 ")[1].split("\n")[0]
 
@@ -85,11 +75,7 @@ def webhook():
 
         return "OK", 200
 
-
-    # =========================
-    # پیام کاربر
-    # =========================
-
+    # پیام‌های کاربران
     user_id = user.get("id")
     name = user.get("first_name", "")
     username = user.get("username", "")
@@ -115,10 +101,8 @@ def webhook():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
+
     app.run(
         host="0.0.0.0",
         port=port
-    )
-        host="0.0.0.0",
-        port=port
-    )
+                                                 )
