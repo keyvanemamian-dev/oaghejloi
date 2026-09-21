@@ -4,9 +4,8 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
-BOT_TOKEN = 1273875466:johT6Q_58Z7Gus9iZw8Vzgd0AdV58JpzHX0
-OWNER_ID = 2020589750
-
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
+OWNER_ID = "2020589750"
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN is not set")
 
